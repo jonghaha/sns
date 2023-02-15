@@ -1,0 +1,16 @@
+spring:
+  jpa:
+    database: postgresql
+    hibernate.dialect: org.hibernate.dilect.PostgreSQLDialect
+    hibernate.ddl-auto: update
+    properties.hibernate.fomat_sql: true
+    show-sql: true
+
+  datasource:
+    hikari:
+      maximum-pool-size: 4
+      url:
+      username:
+      password:
+      platform: postgres
+      driver-class-name: org.postgressql.Driver
