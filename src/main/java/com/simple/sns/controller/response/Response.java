@@ -13,7 +13,23 @@ public class Response<T> {
 		return new Response<>(errorCode, null);
 	}
 
+	public static Response<Void> sucess() {
+		return new Response<Void>("SUCCESS", null);
+	}
+
 	public static <T> Response<T> sucess(T result) {
 		return new Response<>("SUCCESS", result);
+	}
+
+	public String toStream() {
+		if (result == null) {
+			return "{"
+				+ "\"resultCode\":" + "\"" + resultCode + "\","
+				+ "\"result\":" + null + "}";
+		}
+
+		return "{"
+			+ "\"resultCode\":" + "\"" + resultCode + "\","
+			+ "\"result\":" + "\"" + result + "\"" + "}";
 	}
 }
