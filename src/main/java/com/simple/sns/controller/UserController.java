@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.simple.sns.controller.request.UserJoinRequest;
 import com.simple.sns.controller.request.UserLoginRequest;
-import com.simple.sns.controller.request.UserLoginResponse;
+import com.simple.sns.controller.response.UserLoginResponse;
 import com.simple.sns.controller.response.Response;
 import com.simple.sns.controller.response.UserJoinResponse;
 import com.simple.sns.model.User;
