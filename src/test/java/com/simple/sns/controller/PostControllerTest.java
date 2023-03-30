@@ -20,7 +20,10 @@ import com.simple.sns.controller.request.PostCreateRequest;
 import com.simple.sns.controller.request.PostModifyRequest;
 import com.simple.sns.exception.ErrorCode;
 import com.simple.sns.exception.SnsApplicationException;
+import com.simple.sns.model.Post;
 import com.simple.sns.service.PostService;
+
+import fixture.PostEntityFixture;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -69,6 +72,9 @@ public class PostControllerTest {
 
 		String title = "title";
 		String body = "body";
+
+		when(postService.modify(eq(title), eq(body), any(), any())).
+			thenReturn(Post.fromEntity(PostEntityFixture.get("userName", 1, 1)));
 
 		mockMvc.perform(put("/api/v1/posts/1")
 				.contentType(MediaType.APPLICATION_JSON)
