@@ -1,6 +1,7 @@
 package com.simple.sns.controller;
 
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -31,8 +32,15 @@ public class PostController {
 	}
 
 	@PutMapping("/{postId}")
-	public Response<PostResponse> modify(@PathVariable Integer postId, @RequestBody PostModifyRequest request, Authentication authentication) {
+	public Response<PostResponse> modify(@PathVariable Integer postId, @RequestBody PostModifyRequest request,
+		Authentication authentication) {
 		Post post = postService.modify(request.getTitle(), request.getBody(), authentication.getName(), postId);
 		return Response.sucess(PostResponse.fromPost(post));
+	}
+
+	@DeleteMapping("/{postId}")
+	public Response<Void> delete(@PathVariable Integer postId, Authentication authentication) {
+		postService.delete(authentication.getName(), postId);
+		return Response.sucess();
 	}
 }
