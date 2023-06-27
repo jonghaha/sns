@@ -1,10 +1,13 @@
 package com.simple.sns.controller;
 
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.simple.sns.controller.request.PostCreateRequest;
+import com.simple.sns.controller.request.PostModifyRequest;
+import com.simple.sns.exception.ErrorCode;
+import com.simple.sns.exception.SnsApplicationException;
+import com.simple.sns.model.Post;
+import com.simple.sns.service.PostService;
+import fixture.PostEntityFixture;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -16,15 +19,10 @@ import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.simple.sns.controller.request.PostCreateRequest;
-import com.simple.sns.controller.request.PostModifyRequest;
-import com.simple.sns.exception.ErrorCode;
-import com.simple.sns.exception.SnsApplicationException;
-import com.simple.sns.model.Post;
-import com.simple.sns.service.PostService;
-
-import fixture.PostEntityFixture;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -175,7 +173,6 @@ public class PostControllerTest {
 	@Test
 	@WithMockUser
 	void 피드목록() throws Exception {
-		// TODO : mocking
 		when(postService.list(any())).thenReturn(Page.empty());
 
 		mockMvc.perform(get("/api/v1/posts")
@@ -187,7 +184,6 @@ public class PostControllerTest {
 	@Test
 	@WithAnonymousUser
 	void 피드목록요청시_로그인하지_않은경우() throws Exception {
-		// TODO : mocking
 		when(postService.list(any())).thenReturn(Page.empty());
 
 		mockMvc.perform(get("/api/v1/posts")
@@ -199,7 +195,6 @@ public class PostControllerTest {
 	@Test
 	@WithMockUser
 	void 내피드목록() throws Exception {
-		// TODO : mocking
 		when(postService.my(any(), any())).thenReturn(Page.empty());
 
 		mockMvc.perform(get("/api/v1/posts/my")
@@ -211,7 +206,6 @@ public class PostControllerTest {
 	@Test
 	@WithAnonymousUser
 	void 내피드목록요청시_로그인하지_않은경우() throws Exception {
-		// TODO : mocking
 		when(postService.my(any(), any())).thenReturn(Page.empty());
 
 		mockMvc.perform(get("/api/v1/posts/my")
@@ -220,5 +214,33 @@ public class PostControllerTest {
 			.andExpect(status().isUnauthorized());
 	}
 
+	@Test
+	@WithMockUser
+	void 좋아요기능() throws Exception {
+		mockMvc.perform(post("/api/v1/posts/1/likes")
+				.contentType(MediaType.APPLICATION_JSON)
+			).andDo(print())
+			.andExpect(status().isOk());
+	}
+
+	@Test
+	@WithAnonymousUser
+	void 좋아요버튼클릭시_로그인하지_않은경우() throws Exception {
+		mockMvc.perform(get("/api/v1/posts/1/likes")
+				.contentType(MediaType.APPLICATION_JSON)
+			).andDo(print())
+			.andExpect(status().isUnauthorized());
+	}
+
+	@Test
+	@WithMockUser
+	void 좋아요버튼클릭시_게시물이_없는경우() throws Exception {
+		doThrow(new SnsApplicationException(ErrorCode.POST_NOT_FOUND)).when(postService).like(any(),any());
+
+		mockMvc.perform(get("/api/v1/posts/1/likes")
+				.contentType(MediaType.APPLICATION_JSON)
+			).andDo(print())
+			.andExpect(status().isNotFound() );
+	}
 
 }

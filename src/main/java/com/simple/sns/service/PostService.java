@@ -1,5 +1,8 @@
 package com.simple.sns.service;
 
+import com.simple.sns.controller.response.Response;
+import com.simple.sns.model.entity.LikeEntity;
+import com.simple.sns.repository.LikeEntityRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -15,12 +18,15 @@ import com.simple.sns.repository.UserEntityRepository;
 
 import lombok.RequiredArgsConstructor;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class PostService {
 
 	private final PostEntityRepository postEntityRepository;
 	private final UserEntityRepository userEntityRepository;
+	private final LikeEntityRepository likeEntityRepository;
 
 	@Transactional
 	public void create(String title, String body, String userName) {
@@ -74,5 +80,29 @@ public class PostService {
 		UserEntity userEntity = userEntityRepository.findByUserName(userName).orElseThrow(() -> new SnsApplicationException(ErrorCode.USER_NOT_FOUND, String.format("%s not founded", userName)));
 
 		return postEntityRepository.findAllByUser(userEntity, pageable).map(Post::fromEntity);
+	}
+
+	@Transactional
+	public void like(Integer postId, String userName) {
+		// post exist
+		PostEntity postEntity = postEntityRepository.findById(postId)
+			.orElseThrow(() -> new SnsApplicationException(ErrorCode.POST_NOT_FOUND, String.format("%s not founded", postId)));
+		UserEntity userEntity = userEntityRepository.findByUserName(userName)
+			.orElseThrow(() -> new SnsApplicationException(ErrorCode.USER_NOT_FOUND, String.format("%s not founded", userName)));
+
+		// check liked -> throw
+		likeEntityRepository.findByUserAndPost(userEntity, postEntity).ifPresent(it -> {
+			throw new SnsApplicationException(ErrorCode.ALREADY_LIKED, String.format("userName %s already like post %d", userName, postId));
+		});
+
+		// like save
+		likeEntityRepository.save(LikeEntity.of(userEntity, postEntity));
+	}
+
+	public int likeCount(Integer postId) {
+		// post exist
+		PostEntity postEntity = postEntityRepository.findById(postId)
+			.orElseThrow(() -> new SnsApplicationException(ErrorCode.POST_NOT_FOUND, String.format("%s not founded", postId)));
+		return likeEntityRepository.countByPost(postEntity);
 	}
 }
