@@ -1,25 +1,18 @@
 package com.simple.sns.controller;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
+import com.simple.sns.controller.request.PostCommentRequest;
 import com.simple.sns.controller.request.PostCreateRequest;
 import com.simple.sns.controller.request.PostModifyRequest;
+import com.simple.sns.controller.response.CommentResponse;
 import com.simple.sns.controller.response.PostResponse;
 import com.simple.sns.controller.response.Response;
 import com.simple.sns.model.Post;
 import com.simple.sns.service.PostService;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/posts")
@@ -62,8 +55,19 @@ public class PostController {
 		postService.like(postId, authentication.getName());
 		return Response.sucess();
 	}
+
 	@GetMapping("/{postId}/likes")
 	public Response<Integer> likeCount(@PathVariable Integer postId, Authentication authentication) {
 		return Response.sucess(postService.likeCount(postId));
+	}
+
+	@PostMapping("/{postId}/comments")
+	public Response<Void> comment(@PathVariable Integer postId, @RequestBody PostCommentRequest request, Authentication authentication) {
+		postService.comment(postId, authentication.getName(), request.getComment());
+		return Response.sucess();
+	}
+	@GetMapping("/{postId}/comments")
+	public Response<Page<CommentResponse>> comment(@PathVariable Integer postId, Pageable pageable, Authentication authentication) {
+		return Response.sucess(postService.getComments(postId, pageable).map(CommentResponse::fromComment));
 	}
 }
