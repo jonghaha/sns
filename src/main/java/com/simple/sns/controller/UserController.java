@@ -1,6 +1,9 @@
 package com.simple.sns.controller;
 
 import com.simple.sns.controller.response.AlarmResponse;
+import com.simple.sns.exception.ErrorCode;
+import com.simple.sns.exception.SnsApplicationException;
+import com.simple.sns.util.ClassUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
@@ -37,6 +40,8 @@ public class UserController {
 
 	@GetMapping("/alarm")
 	public Response<Page<AlarmResponse>> alarm(Pageable pageable, Authentication authentication) {
-		return Response.sucess(userService.alarmList(authentication.getName(), pageable).map(AlarmResponse::fromEntity));
+		User user = ClassUtils.getSafeCastInstance(authentication.getPrincipal(), User.class)
+			.orElseThrow(() -> new SnsApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "Casting to User class failed"));
+		return Response.sucess(userService.alarmList(user.getId(), pageable).map(AlarmResponse::fromEntity));
 	}
 }
